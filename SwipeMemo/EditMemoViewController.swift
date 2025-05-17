@@ -17,6 +17,11 @@ class EditMemoViewController: UIViewController {
         super.viewDidLoad()
         setup()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.backgroundColor = Theme.color
+    }
     
     func inject(presenter: EditMemoPresenter) {
         self.presenter = presenter

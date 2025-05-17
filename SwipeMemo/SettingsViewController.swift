@@ -9,16 +9,32 @@ import UIKit
 
 class SettingsViewController: UIViewController {
     @IBOutlet weak var versionLabel: UILabel!
+    private var colorControl: UISegmentedControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.backgroundColor = Theme.color
+    }
+
     private func setup() {
-        
+
         versionLabel.text = "1.0"
-        
+
+        colorControl = UISegmentedControl(items: MainColor.allCases.map { $0.title })
+        colorControl.selectedSegmentIndex = Theme.current.rawValue
+        colorControl.translatesAutoresizingMaskIntoConstraints = false
+        colorControl.addTarget(self, action: #selector(colorChanged(_:)), for: .valueChanged)
+        view.addSubview(colorControl)
+        NSLayoutConstraint.activate([
+            colorControl.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+            colorControl.topAnchor.constraint(equalTo: versionLabel.bottomAnchor, constant: 20)
+        ])
+
         let downSwipe = UISwipeGestureRecognizer(
             target: self,
             action: #selector(self.didSwipe(_:))
@@ -50,5 +66,11 @@ class SettingsViewController: UIViewController {
         }
         self.navigationController?.view.layer.add(transition, forKey: kCATransition)
         self.navigationController?.popViewController(animated: false)
+    }
+
+    @objc private func colorChanged(_ sender: UISegmentedControl) {
+        guard let newColor = MainColor(rawValue: sender.selectedSegmentIndex) else { return }
+        Theme.current = newColor
+        view.backgroundColor = Theme.color
     }
 }
