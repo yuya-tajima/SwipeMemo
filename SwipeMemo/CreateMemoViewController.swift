@@ -21,6 +21,11 @@ class CreateMemoViewController: UIViewController {
         super.viewDidLoad()
         setup()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.backgroundColor = Theme.color
+    }
     
     func inject(presenter: CreateMemoPresenterInput) {
         self.presenter = presenter
