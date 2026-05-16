@@ -29,6 +29,9 @@ Use `SwipeMemo.xcworkspace` for Xcode and CLI builds. Do not build from `SwipeMe
 - When adding a Swift file, add it to the `SwipeMemo` target membership and Sources build phase.
 - Keep Storyboard changes scoped and verify Auto Layout on at least one modern iPhone simulator.
 - Do not add external SDKs or capabilities without documenting App Store and privacy impact.
+- Close Xcode before rebasing, resolving `.pbxproj` conflicts, or rewriting local history that touches Xcode project files.
+- If Xcode opens `SwipeMemo.xcworkspace` but shows `Failed to load container for document at url: .../SwipeMemo.xcodeproj`, clear the per-user workspace UI state at `SwipeMemo.xcworkspace/xcuserdata/<user>.xcuserdatad/UserInterfaceState.xcuserstate` and reopen Xcode.
+- Do not commit `.xcuserdata` UI state files.
 
 ## Release Rules
 
