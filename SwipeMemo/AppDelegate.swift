@@ -20,29 +20,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     private func configureRealm() {
         let configuration = Realm.Configuration(
-            schemaVersion: 1,
+            schemaVersion: 2,
             migrationBlock: { migration, oldSchemaVersion in
-                guard oldSchemaVersion < 1 else {
-                    return
-                }
+                if oldSchemaVersion < 1 {
+                    var memos: [(date: Date, object: MigrationObject)] = []
+                    migration.enumerateObjects(ofType: Memo.className()) { oldObject, newObject in
+                        guard let oldObject = oldObject,
+                              let newObject = newObject,
+                              let date = oldObject["date"] as? Date else {
+                            fatalError("Memo migration requires existing memo date data.")
+                        }
 
-                var memos: [(date: Date, object: MigrationObject)] = []
-                migration.enumerateObjects(ofType: Memo.className()) { oldObject, newObject in
-                    guard let oldObject = oldObject,
-                          let newObject = newObject,
-                          let date = oldObject["date"] as? Date else {
-                        fatalError("Memo migration requires existing memo date data.")
+                        memos.append((date, newObject))
                     }
 
-                    memos.append((date, newObject))
+                    memos
+                        .sorted { $0.date > $1.date }
+                        .enumerated()
+                        .forEach { index, memo in
+                            memo.object["displayOrder"] = index
+                        }
                 }
 
-                memos
-                    .sorted { $0.date > $1.date }
-                    .enumerated()
-                    .forEach { index, memo in
-                        memo.object["displayOrder"] = index
+                if oldSchemaVersion < 2 {
+                    migration.enumerateObjects(ofType: Memo.className()) { _, newObject in
+                        newObject?["isFavorite"] = false
+                        newObject?["favoriteDisplayOrder"] = 0
                     }
+                }
             }
         )
 

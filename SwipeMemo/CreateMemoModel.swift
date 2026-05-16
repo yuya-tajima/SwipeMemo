@@ -8,20 +8,17 @@
 import RealmSwift
 
 protocol CreateMemoModelInput {
-    func save(text: String) throws -> Void
+    func save(text: String, isFavorite: Bool) throws -> Void
 }
 
 struct CreateMemoModel: CreateMemoModelInput {
     
-    func save(text: String) throws -> Void {
+    func save(text: String, isFavorite: Bool) throws -> Void {
         do {
             let realm = try Realm()
 
             try realm.write {
-                let existingMemos = Array(realm.objects(Memo.self).sorted(by: [
-                    SortDescriptor(keyPath: "displayOrder", ascending: true),
-                    SortDescriptor(keyPath: "date", ascending: false)
-                ]))
+                let existingMemos = Array(MemoOrderingHelper.orderedMemosByDisplayOrder(in: realm))
 
                 for (index, memo) in existingMemos.enumerated() {
                     memo.displayOrder = index + 1
@@ -31,6 +28,8 @@ struct CreateMemoModel: CreateMemoModelInput {
                 memo.text = text
                 memo.date = Date()
                 memo.displayOrder = 0
+                memo.isFavorite = isFavorite
+                memo.favoriteDisplayOrder = isFavorite ? MemoOrderingHelper.nextFavoriteDisplayOrder(in: realm) : 0
                 realm.add(memo, update: .modified)
             }
             

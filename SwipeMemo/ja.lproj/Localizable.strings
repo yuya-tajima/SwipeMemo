@@ -2,3 +2,8 @@
 "delete_memo_confirmation_message" = "このメモを削除しますか？";
 "delete_memo_confirmation_ok" = "OK";
 "delete_memo_confirmation_cancel" = "キャンセル";
+"memo_list_favorites_section_title" = "お気に入り";
+"memo_list_regular_section_title" = "その他";
+"favorite_memo_accessibility_value" = "お気に入り";
+"favorite_button_add_accessibility_label" = "お気に入りに追加";
+"favorite_button_remove_accessibility_label" = "お気に入りから解除";

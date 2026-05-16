@@ -2,3 +2,8 @@
 "delete_memo_confirmation_message" = "Delete this memo?";
 "delete_memo_confirmation_ok" = "OK";
 "delete_memo_confirmation_cancel" = "Cancel";
+"memo_list_favorites_section_title" = "Favorites";
+"memo_list_regular_section_title" = "Other";
+"favorite_memo_accessibility_value" = "Favorite";
+"favorite_button_add_accessibility_label" = "Add to Favorites";
+"favorite_button_remove_accessibility_label" = "Remove from Favorites";

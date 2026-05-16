@@ -16,4 +16,8 @@ class Memo: Object {
     @Persisted var date = Date()
 
     @Persisted var displayOrder = 0
+
+    @Persisted var isFavorite = false
+
+    @Persisted var favoriteDisplayOrder = 0
 }

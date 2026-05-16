@@ -12,6 +12,7 @@ class EditMemoViewController: UIViewController {
     @IBOutlet weak var textField: UITextView!
     
     private var presenter: EditMemoPresenterInput!
+    private let favoriteToolbar = MemoFavoriteToolbar()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,8 +35,15 @@ class EditMemoViewController: UIViewController {
         textField.smartInsertDeleteType = .no
         textField.delegate = self
         setupKeyboardToolbar()
+        setupFavoriteToolbar()
         
         presentationController?.delegate = self
+    }
+
+    private func setupFavoriteToolbar() {
+        favoriteToolbar.favoriteDelegate = self
+        favoriteToolbar.install(in: view, above: textField)
+        updateFavoriteButton(isFavorite: presenter.initialIsFavorite())
     }
 
     private func setupKeyboardToolbar() {
@@ -45,7 +53,7 @@ class EditMemoViewController: UIViewController {
     @objc private func dismissKeyboard() {
         textField.resignFirstResponder()
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         if let text = self.textField.text, !text.isEmpty {
             presenter.viewWillDisappear(text: text)
@@ -76,4 +84,14 @@ extension EditMemoViewController: UIAdaptivePresentationControllerDelegate {
     }
 }
 
-extension EditMemoViewController: EditMemoPresenterOutput {}
+extension EditMemoViewController: EditMemoPresenterOutput {
+    func updateFavoriteButton(isFavorite: Bool) {
+        favoriteToolbar.update(isFavorite: isFavorite)
+    }
+}
+
+extension EditMemoViewController: MemoFavoriteToolbarDelegate {
+    func memoFavoriteToolbarDidTapFavorite(_ toolbar: MemoFavoriteToolbar) {
+        presenter.didTapFavoriteButton()
+    }
+}

@@ -16,6 +16,7 @@ class CreateMemoViewController: UIViewController {
     private var secondViewController: CreateMemoViewController!
     
     private var presenter: CreateMemoPresenterInput!
+    private let favoriteToolbar = MemoFavoriteToolbar()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,6 +51,7 @@ class CreateMemoViewController: UIViewController {
         textField.smartInsertDeleteType = .no
         textField.delegate = self
         setupKeyboardToolbar()
+        setupFavoriteToolbar()
 
         let leftSwipe = UISwipeGestureRecognizer(
             target: self,
@@ -95,6 +97,12 @@ class CreateMemoViewController: UIViewController {
         )
     }
 
+    private func setupFavoriteToolbar() {
+        favoriteToolbar.favoriteDelegate = self
+        favoriteToolbar.install(in: view, above: textField)
+        favoriteToolbar.update(isFavorite: presenter.initialIsFavorite())
+    }
+
     private func setupKeyboardToolbar() {
         textField.inputAccessoryView = KeyboardDoneToolbar(target: self, action: #selector(dismissKeyboard))
     }
@@ -137,6 +145,10 @@ extension CreateMemoViewController: UITextViewDelegate {
 }
 
 extension CreateMemoViewController: CreateMemoPresenterOutput {
+
+    func updateFavoriteButton(isFavorite: Bool) {
+        favoriteToolbar.update(isFavorite: isFavorite)
+    }
     
     func transitionToNextInput(storyboardID: String) {
         var controllerStack: [UIViewController] = [listViewController]
@@ -163,5 +175,11 @@ extension CreateMemoViewController: CreateMemoPresenterOutput {
         transition.subtype = .fromTop
         self.navigationController?.view.layer.add(transition, forKey: kCATransition)
         self.navigationController?.setViewControllers(controllerStack, animated: false)
+    }
+}
+
+extension CreateMemoViewController: MemoFavoriteToolbarDelegate {
+    func memoFavoriteToolbarDidTapFavorite(_ toolbar: MemoFavoriteToolbar) {
+        presenter.didTapFavoriteButton()
     }
 }

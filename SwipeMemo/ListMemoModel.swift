@@ -10,30 +10,16 @@ import RealmSwift
 protocol ListMemoModelInput {
     func delete(memo: Memo) throws -> Void
     func fetchAll() throws -> [Memo]
-    func updateDisplayOrder(memos: [Memo]) throws -> Void
+    func updateDisplayOrder(memos: [Memo], isFavorite: Bool) throws -> Void
 }
 
 struct ListMemoModel: ListMemoModelInput {
 
-    private func orderedMemos(in realm: Realm) -> Results<Memo> {
-        return realm.objects(Memo.self).sorted(by: [
-            SortDescriptor(keyPath: "displayOrder", ascending: true),
-            SortDescriptor(keyPath: "date", ascending: false)
-        ])
-    }
-
-    private func normalizeDisplayOrder(in realm: Realm) {
-        let memos = Array(orderedMemos(in: realm))
-        for (index, memo) in memos.enumerated() {
-            memo.displayOrder = index
-        }
-    }
-    
     func fetchAll () throws -> [Memo] {
         do {
             let realm = try Realm()
-            let results = orderedMemos(in: realm)
-            return Array(results)
+            return Array(MemoOrderingHelper.orderedFavoriteMemos(in: realm)) +
+                Array(MemoOrderingHelper.orderedRegularMemos(in: realm))
         } catch let error as NSError {
             print(error.localizedDescription)
             throw StorageError.read("The memo list could not be loaded")
@@ -54,7 +40,8 @@ struct ListMemoModel: ListMemoModelInput {
 
             try realm.write {
                 realm.delete(storedMemo)
-                normalizeDisplayOrder(in: realm)
+                MemoOrderingHelper.normalizeDisplayOrder(in: realm)
+                MemoOrderingHelper.normalizeFavoriteDisplayOrder(in: realm)
             }
 
         } catch let error as StorageError {
@@ -65,28 +52,48 @@ struct ListMemoModel: ListMemoModelInput {
         }
     }
 
-    func updateDisplayOrder(memos: [Memo]) throws -> Void {
+    func updateDisplayOrder(memos: [Memo], isFavorite: Bool) throws -> Void {
         do {
-            guard memos.allSatisfy({ !$0.isInvalidated }) else {
+            guard memos.allSatisfy({ !$0.isInvalidated && $0.isFavorite == isFavorite }) else {
                 throw StorageError.write("The memo order could not be saved")
             }
 
             let realm = try Realm()
             let memoIDs = memos.map { $0.id }
             let uniqueMemoIDs = Set(memoIDs.map { $0.stringValue })
+            let expectedMemoCount = realm.objects(Memo.self).filter("isFavorite == %@", isFavorite).count
 
             guard memoIDs.count == uniqueMemoIDs.count,
-                  memoIDs.count == realm.objects(Memo.self).count else {
+                  memoIDs.count == expectedMemoCount else {
                 throw StorageError.write("The memo order could not be saved")
             }
 
             try realm.write {
+                MemoOrderingHelper.normalizeDisplayOrder(in: realm)
+                let favoriteDisplayOrders = Set(
+                    realm.objects(Memo.self)
+                        .filter("isFavorite == true")
+                        .map { $0.displayOrder }
+                )
+                let availableDisplayOrders = (0..<realm.objects(Memo.self).count).filter {
+                    !favoriteDisplayOrders.contains($0)
+                }
+
+                guard isFavorite || availableDisplayOrders.count == memoIDs.count else {
+                    throw StorageError.write("The memo order could not be saved")
+                }
+
                 for (index, memoID) in memoIDs.enumerated() {
-                    guard let memo = realm.object(ofType: Memo.self, forPrimaryKey: memoID) else {
+                    guard let memo = realm.object(ofType: Memo.self, forPrimaryKey: memoID),
+                          memo.isFavorite == isFavorite else {
                         throw StorageError.write("The memo order could not be saved")
                     }
 
-                    memo.displayOrder = index
+                    if isFavorite {
+                        memo.favoriteDisplayOrder = index
+                    } else {
+                        memo.displayOrder = availableDisplayOrders[index]
+                    }
                 }
             }
 

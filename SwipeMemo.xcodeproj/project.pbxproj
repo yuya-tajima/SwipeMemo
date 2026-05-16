@@ -29,6 +29,8 @@
 		21B31116287A74D300699597 /* EditMemoPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B31115287A74D300699597 /* EditMemoPresenter.swift */; };
 		21B31118287A754600699597 /* EditMemoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B31117287A754600699597 /* EditMemoModel.swift */; };
 		21F5A0062DD940000000001 /* KeyboardDoneToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F5A0052DD940000000001 /* KeyboardDoneToolbar.swift */; };
+		21F5A0022DD940000000001 /* MemoFavoriteToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F5A0012DD940000000001 /* MemoFavoriteToolbar.swift */; };
+		21F5A0042DD940000000001 /* MemoOrderingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F5A0032DD940000000001 /* MemoOrderingHelper.swift */; };
 		3AD8E5419E02730EE409470D /* Pods_SwipeMemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68BCA38EC342CD6983BAE59F /* Pods_SwipeMemo.framework */; };
 /* End PBXBuildFile section */
 
@@ -58,6 +60,8 @@
 		21B31115287A74D300699597 /* EditMemoPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditMemoPresenter.swift; sourceTree = "<group>"; };
 		21B31117287A754600699597 /* EditMemoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditMemoModel.swift; sourceTree = "<group>"; };
 		21F5A0052DD940000000001 /* KeyboardDoneToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardDoneToolbar.swift; sourceTree = "<group>"; };
+		21F5A0012DD940000000001 /* MemoFavoriteToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoFavoriteToolbar.swift; sourceTree = "<group>"; };
+		21F5A0032DD940000000001 /* MemoOrderingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoOrderingHelper.swift; sourceTree = "<group>"; };
 		68BCA38EC342CD6983BAE59F /* Pods_SwipeMemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SwipeMemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		88B22F7C68868A20248C457B /* Pods-SwipeMemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwipeMemo.release.xcconfig"; path = "Target Support Files/Pods-SwipeMemo/Pods-SwipeMemo.release.xcconfig"; sourceTree = "<group>"; };
 		8CDF7CDAC202AE135699D657 /* Pods-SwipeMemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwipeMemo.debug.xcconfig"; path = "Target Support Files/Pods-SwipeMemo/Pods-SwipeMemo.debug.xcconfig"; sourceTree = "<group>"; };
@@ -105,6 +109,8 @@
 				21A4B40628828A4600BF2CA7 /* SettingsUIStoryboardSegue.swift */,
 				21A4B3FE28803BC700BF2CA7 /* Errors.swift */,
 				21B311012873A1B000699597 /* Memo.swift */,
+				21F5A0032DD940000000001 /* MemoOrderingHelper.swift */,
+				21F5A0012DD940000000001 /* MemoFavoriteToolbar.swift */,
 				21F5A0052DD940000000001 /* KeyboardDoneToolbar.swift */,
 				2125142D286D055E0022B78D /* ListMemoViewController.swift */,
 				21B3110D2879BB8F00699597 /* ListMemoPresenter.swift */,
@@ -276,6 +282,8 @@
 				21A4B40728828A4600BF2CA7 /* SettingsUIStoryboardSegue.swift in Sources */,
 				21B31118287A754600699597 /* EditMemoModel.swift in Sources */,
 				21B31112287A622000699597 /* CreateMemoPresenter.swift in Sources */,
+				21F5A0042DD940000000001 /* MemoOrderingHelper.swift in Sources */,
+				21F5A0022DD940000000001 /* MemoFavoriteToolbar.swift in Sources */,
 				21F5A0062DD940000000001 /* KeyboardDoneToolbar.swift in Sources */,
 				21B311022873A1B000699597 /* Memo.swift in Sources */,
 				21B311102879BC8B00699597 /* ListMemoModel.swift in Sources */,

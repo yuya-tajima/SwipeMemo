@@ -10,11 +10,14 @@ protocol CreateMemoPresenterInput {
     func didDownSwipe()
     func shouldChangeTextIn (totalWordCount words: Int) -> Bool
     func viewWillDisappear(text: String)
+    func initialIsFavorite() -> Bool
+    mutating func didTapFavoriteButton()
 }
 
 protocol CreateMemoPresenterOutput: AnyObject {
     func transitionToNextInput(storyboardID: String)
     func transitionToList()
+    func updateFavoriteButton(isFavorite: Bool)
 }
 
 struct CreateMemoPresenter: CreateMemoPresenterInput {
@@ -22,6 +25,7 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
     private weak var view: CreateMemoPresenterOutput!
     private var model: CreateMemoModelInput
     private var helper: InputMemoConstraintsProtocol
+    private var isFavorite = false
     
     init(view: CreateMemoPresenterOutput, model: CreateMemoModelInput, helper: InputMemoConstraintsProtocol) {
         self.view  = view
@@ -32,6 +36,15 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
     func shouldChangeTextIn (totalWordCount words: Int) -> Bool {
         return self.helper.isNumberOfCharsCorrent(totalWordCount: words)
     }
+
+    func initialIsFavorite() -> Bool {
+        return isFavorite
+    }
+
+    mutating func didTapFavoriteButton() {
+        isFavorite.toggle()
+        view.updateFavoriteButton(isFavorite: isFavorite)
+    }
     
     func viewWillDisappear(text: String) {
         let normalizedText = self.helper.normalizedTextForSaving(text)
@@ -40,7 +53,7 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
         }
 
         do {
-            try self.model.save(text: normalizedText)
+            try self.model.save(text: normalizedText, isFavorite: isFavorite)
         } catch StorageError.write(let message) {
             MemoError.pushErrorMessage(message: message)
         } catch {

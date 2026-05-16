@@ -78,7 +78,7 @@ class ListMemoViewController: UIViewController {
         presenter.pullDown()
     }
 
-    private func presentDeleteConfirmation(forRow row: Int, indexPath: IndexPath) {
+    private func presentDeleteConfirmation(at indexPath: IndexPath) {
         let dialog = UIAlertController(
             title: NSLocalizedString("delete_memo_confirmation_title", comment: ""),
             message: NSLocalizedString("delete_memo_confirmation_message", comment: ""),
@@ -89,7 +89,7 @@ class ListMemoViewController: UIViewController {
                 title: NSLocalizedString("delete_memo_confirmation_ok", comment: ""),
                 style: .destructive,
                 handler: { [weak self] _ in
-                    self?.presenter.didTapDeleteButton(forRow: row, indexPath: indexPath)
+                    self?.presenter.didTapDeleteButton(at: indexPath)
                 }
             )
         )
@@ -120,12 +120,13 @@ class ListMemoViewController: UIViewController {
                 return
             }
 
-            let memo = presenter.memo(forRow: indexPath.row)
+            let memo = presenter.memo(at: indexPath)
 
             let sender = EditDataSender(
                 prevScene: self,
                 memoID: memo.id,
-                initialText: memo.text
+                initialText: memo.text,
+                initialIsFavorite: memo.isFavorite
             )
             editViewController.inject(
                 presenter: EditMemoPresenter(
@@ -160,23 +161,53 @@ extension ListMemoViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            presentDeleteConfirmation(forRow: indexPath.row, indexPath: indexPath)
+            presentDeleteConfirmation(at: indexPath)
         }
     }
 }
 
 extension ListMemoViewController: UITableViewDataSource {
 
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return presenter.numberOfSections
+    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return presenter.numberOfMemos
+        return presenter.numberOfMemos(in: section)
+    }
+
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return presenter.titleForSection(section)
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let memo = presenter.memo(forRow: indexPath.row)
-        cell.textLabel?.text = memo.text
-        cell.textLabel?.numberOfLines = 15
-        cell.textLabel?.lineBreakMode = .byTruncatingTail
+        let memo = presenter.memo(at: indexPath)
+
+        var content = cell.defaultContentConfiguration()
+        content.text = memo.text
+        content.image = nil
+        content.textProperties.numberOfLines = 15
+        content.textProperties.lineBreakMode = .byTruncatingTail
+        cell.contentConfiguration = content
+
+        cell.imageView?.image = nil
+        cell.imageView?.highlightedImage = nil
+        cell.imageView?.isHidden = true
+        cell.imageView?.tintColor = nil
+        cell.accessoryType = .none
+        cell.accessoryView = nil
+
+        var background = UIBackgroundConfiguration.listPlainCell()
+        if memo.isFavorite {
+            background.backgroundColor = UIColor.systemYellow.withAlphaComponent(0.12)
+            cell.accessibilityValue = NSLocalizedString("favorite_memo_accessibility_value", comment: "")
+        } else {
+            background.backgroundColor = .systemBackground
+            cell.accessibilityValue = nil
+        }
+        cell.backgroundConfiguration = background
+
         return cell
     }
 
@@ -185,17 +216,17 @@ extension ListMemoViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        _ = presenter.moveMemo(from: sourceIndexPath.row, to: destinationIndexPath.row)
+        _ = presenter.moveMemo(from: sourceIndexPath, to: destinationIndexPath)
     }
 }
 
 extension ListMemoViewController: UITableViewDragDelegate {
 
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let memo = presenter.memo(forRow: indexPath.row)
+        let memo = presenter.memo(at: indexPath)
         let itemProvider = NSItemProvider(object: memo.text as NSString)
         let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = memo.id.stringValue
+        dragItem.localObject = indexPath
         return [dragItem]
     }
 }
@@ -204,6 +235,12 @@ extension ListMemoViewController: UITableViewDropDelegate {
 
     func tableView(_ tableView: UITableView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UITableViewDropProposal {
         guard session.localDragSession != nil else {
+            return UITableViewDropProposal(operation: .cancel)
+        }
+
+        if let sourceIndexPath = session.localDragSession?.items.first?.localObject as? IndexPath,
+           let destinationIndexPath = destinationIndexPath,
+           sourceIndexPath.section != destinationIndexPath.section {
             return UITableViewDropProposal(operation: .cancel)
         }
 
@@ -217,21 +254,35 @@ extension ListMemoViewController: UITableViewDropDelegate {
             return
         }
 
-        let rowCount = presenter.numberOfMemos
+        guard presenter.numberOfSections > sourceIndexPath.section else {
+            return
+        }
+
+        let rowCount = presenter.numberOfMemos(in: sourceIndexPath.section)
         guard rowCount > 0 else {
             return
         }
 
-        let proposedRow = coordinator.destinationIndexPath?.row ?? rowCount - 1
-        let destinationRow = min(max(proposedRow, 0), rowCount - 1)
-        let destinationIndexPath = IndexPath(row: destinationRow, section: sourceIndexPath.section)
+        let proposedIndexPath = coordinator.destinationIndexPath ?? IndexPath(row: rowCount - 1, section: sourceIndexPath.section)
+        guard presenter.numberOfSections > proposedIndexPath.section,
+              proposedIndexPath.section == sourceIndexPath.section else {
+            return
+        }
+
+        let destinationRowCount = presenter.numberOfMemos(in: proposedIndexPath.section)
+        guard destinationRowCount > 0 else {
+            return
+        }
+
+        let destinationRow = min(max(proposedIndexPath.row, 0), destinationRowCount - 1)
+        let destinationIndexPath = IndexPath(row: destinationRow, section: proposedIndexPath.section)
 
         guard sourceIndexPath != destinationIndexPath else {
             coordinator.drop(item.dragItem, toRowAt: destinationIndexPath)
             return
         }
 
-        guard presenter.moveMemo(from: sourceIndexPath.row, to: destinationRow) else {
+        guard presenter.moveMemo(from: sourceIndexPath, to: destinationIndexPath) else {
             return
         }
 

@@ -13,17 +13,21 @@ protocol EditMemoPresenterInput {
     func dismiss()
     func dismissAfter()
     func initialText() -> String
+    func initialIsFavorite() -> Bool
+    func didTapFavoriteButton()
 }
 
 struct EditDataSender {
     let prevScene: EditMemoDismissActionProtocol
     let memoID: ObjectId
     let initialText: String
+    let initialIsFavorite: Bool
     
-    init(prevScene: EditMemoDismissActionProtocol, memoID: ObjectId, initialText: String) {
+    init(prevScene: EditMemoDismissActionProtocol, memoID: ObjectId, initialText: String, initialIsFavorite: Bool) {
         self.prevScene = prevScene
         self.memoID = memoID
         self.initialText = initialText
+        self.initialIsFavorite = initialIsFavorite
     }
 }
 
@@ -32,7 +36,9 @@ protocol EditMemoDismissActionProtocol {
     func viewDidAppear()
 }
 
-protocol EditMemoPresenterOutput: AnyObject {}
+protocol EditMemoPresenterOutput: AnyObject {
+    func updateFavoriteButton(isFavorite: Bool)
+}
 
 struct EditMemoPresenter: EditMemoPresenterInput {
 
@@ -60,6 +66,10 @@ struct EditMemoPresenter: EditMemoPresenterInput {
     func initialText() -> String {
         return sender.initialText
     }
+
+    func initialIsFavorite() -> Bool {
+        return sender.initialIsFavorite
+    }
     
     func shouldChangeTextIn (totalWordCount words: Int) -> Bool {
         return self.helper.isNumberOfCharsCorrent(totalWordCount: words)
@@ -73,6 +83,17 @@ struct EditMemoPresenter: EditMemoPresenterInput {
 
         do {
             try self.model.save(memoID: sender.memoID, text: normalizedText)
+        } catch StorageError.write(let message) {
+            MemoError.pushErrorMessage(message: message)
+        } catch {
+            fatalError("Unexpected error: \(error).")
+        }
+    }
+
+    func didTapFavoriteButton() {
+        do {
+            let isFavorite = try self.model.toggleFavorite(memoID: sender.memoID)
+            view.updateFavoriteButton(isFavorite: isFavorite)
         } catch StorageError.write(let message) {
             MemoError.pushErrorMessage(message: message)
         } catch {
