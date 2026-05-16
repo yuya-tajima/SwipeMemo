@@ -13,6 +13,7 @@
 		21251431286D055E0022B78D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2125142F286D055E0022B78D /* Main.storyboard */; };
 		21251433286D055F0022B78D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21251432286D055F0022B78D /* Assets.xcassets */; };
 		21251436286D055F0022B78D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 21251434286D055F0022B78D /* LaunchScreen.storyboard */; };
+		21D6A0042DD93F9100A00001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 21D6A0032DD93F9100A00001 /* Localizable.strings */; };
 		21A4B3FF28803BC700BF2CA7 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A4B3FE28803BC700BF2CA7 /* Errors.swift */; };
 		21A4B403288278C900BF2CA7 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 21A4B402288278C900BF2CA7 /* Settings.bundle */; };
 		21A4B4052882843400BF2CA7 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A4B4042882843400BF2CA7 /* SettingsViewController.swift */; };
@@ -39,6 +40,8 @@
 		21251432286D055F0022B78D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		21251435286D055F0022B78D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		21251437286D055F0022B78D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		21D6A0012DD93F9100A00001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		21D6A0022DD93F9100A00001 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		21A4B3FE28803BC700BF2CA7 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		21A4B402288278C900BF2CA7 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		21A4B4042882843400BF2CA7 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
@@ -113,6 +116,7 @@
 				2125142F286D055E0022B78D /* Main.storyboard */,
 				21251432286D055F0022B78D /* Assets.xcassets */,
 				21251434286D055F0022B78D /* LaunchScreen.storyboard */,
+				21D6A0032DD93F9100A00001 /* Localizable.strings */,
 				21251437286D055F0022B78D /* Info.plist */,
 			);
 			path = SwipeMemo;
@@ -180,6 +184,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ja,
 				Base,
 			);
 			mainGroup = 2125141D286D055E0022B78D;
@@ -200,6 +205,7 @@
 				21A4B403288278C900BF2CA7 /* Settings.bundle in Resources */,
 				21251436286D055F0022B78D /* LaunchScreen.storyboard in Resources */,
 				21251433286D055F0022B78D /* Assets.xcassets in Resources */,
+				21D6A0042DD93F9100A00001 /* Localizable.strings in Resources */,
 				21251431286D055E0022B78D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -289,6 +295,15 @@
 				21251435286D055F0022B78D /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		21D6A0032DD93F9100A00001 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				21D6A0012DD93F9100A00001 /* en */,
+				21D6A0022DD93F9100A00001 /* ja */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

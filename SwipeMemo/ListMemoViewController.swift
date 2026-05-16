@@ -68,6 +68,33 @@ class ListMemoViewController: UIViewController {
         tableView.refreshControl!.endRefreshing()
         presenter.pullDown()
     }
+
+    private func presentDeleteConfirmation(forRow row: Int, indexPath: IndexPath) {
+        let dialog = UIAlertController(
+            title: NSLocalizedString("delete_memo_confirmation_title", comment: ""),
+            message: NSLocalizedString("delete_memo_confirmation_message", comment: ""),
+            preferredStyle: .alert
+        )
+        dialog.addAction(
+            UIAlertAction(
+                title: NSLocalizedString("delete_memo_confirmation_ok", comment: ""),
+                style: .destructive,
+                handler: { [weak self] _ in
+                    self?.presenter.didTapDeleteButton(forRow: row, indexPath: indexPath)
+                }
+            )
+        )
+        dialog.addAction(
+            UIAlertAction(
+                title: NSLocalizedString("delete_memo_confirmation_cancel", comment: ""),
+                style: .cancel,
+                handler: { [weak self] _ in
+                    self?.tableView.setEditing(false, animated: true)
+                }
+            )
+        )
+        present(dialog, animated: true, completion: nil)
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "cellSegue" {
@@ -123,7 +150,7 @@ extension ListMemoViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            presenter.didTapDeleteButton(forRow: indexPath.row, indexPath: indexPath)
+            presentDeleteConfirmation(forRow: indexPath.row, indexPath: indexPath)
         }
     }
 }
