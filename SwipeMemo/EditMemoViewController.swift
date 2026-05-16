@@ -41,9 +41,7 @@ class EditMemoViewController: UIViewController {
     }
 
     private func setupFavoriteToolbar() {
-        favoriteToolbar.favoriteDelegate = self
-        favoriteToolbar.install(in: view, above: textField)
-        updateFavoriteButton(isFavorite: presenter.initialIsFavorite())
+        favoriteToolbar.install(in: view, above: textField, delegate: self, isFavorite: presenter.initialIsFavorite())
     }
 
     private func setupKeyboardToolbar() {

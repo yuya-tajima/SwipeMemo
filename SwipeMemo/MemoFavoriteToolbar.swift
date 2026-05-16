@@ -29,7 +29,8 @@ final class MemoFavoriteToolbar: UIToolbar {
         setup()
     }
 
-    func install(in containerView: UIView, above contentView: UIView) {
+    func install(in containerView: UIView, above contentView: UIView, delegate: MemoFavoriteToolbarDelegate, isFavorite: Bool) {
+        favoriteDelegate = delegate
         translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(self)
         Self.deactivateBottomConstraints(in: containerView, for: contentView)
@@ -41,6 +42,7 @@ final class MemoFavoriteToolbar: UIToolbar {
             heightAnchor.constraint(equalToConstant: Layout.height),
             contentView.bottomAnchor.constraint(equalTo: topAnchor)
         ])
+        update(isFavorite: isFavorite)
     }
 
     func update(isFavorite: Bool) {

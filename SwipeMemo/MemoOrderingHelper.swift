@@ -28,6 +28,21 @@ enum MemoOrderingHelper {
         ])
     }
 
+    static func memoCount(in realm: Realm, isFavorite: Bool) -> Int {
+        return realm.objects(Memo.self).filter("isFavorite == %@", isFavorite).count
+    }
+
+    static func availableRegularDisplayOrders(in realm: Realm) -> [Int] {
+        let favoriteDisplayOrders = Set(
+            realm.objects(Memo.self)
+                .filter("isFavorite == true")
+                .map { $0.displayOrder }
+        )
+        return (0..<realm.objects(Memo.self).count).filter {
+            !favoriteDisplayOrders.contains($0)
+        }
+    }
+
     static func normalizeDisplayOrder(in realm: Realm) {
         let memos = Array(orderedMemosByDisplayOrder(in: realm))
         for (index, memo) in memos.enumerated() {

@@ -61,7 +61,7 @@ struct ListMemoModel: ListMemoModelInput {
             let realm = try Realm()
             let memoIDs = memos.map { $0.id }
             let uniqueMemoIDs = Set(memoIDs.map { $0.stringValue })
-            let expectedMemoCount = realm.objects(Memo.self).filter("isFavorite == %@", isFavorite).count
+            let expectedMemoCount = MemoOrderingHelper.memoCount(in: realm, isFavorite: isFavorite)
 
             guard memoIDs.count == uniqueMemoIDs.count,
                   memoIDs.count == expectedMemoCount else {
@@ -70,14 +70,7 @@ struct ListMemoModel: ListMemoModelInput {
 
             try realm.write {
                 MemoOrderingHelper.normalizeDisplayOrder(in: realm)
-                let favoriteDisplayOrders = Set(
-                    realm.objects(Memo.self)
-                        .filter("isFavorite == true")
-                        .map { $0.displayOrder }
-                )
-                let availableDisplayOrders = (0..<realm.objects(Memo.self).count).filter {
-                    !favoriteDisplayOrders.contains($0)
-                }
+                let availableDisplayOrders = MemoOrderingHelper.availableRegularDisplayOrders(in: realm)
 
                 guard isFavorite || availableDisplayOrders.count == memoIDs.count else {
                     throw StorageError.write("The memo order could not be saved")

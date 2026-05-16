@@ -43,16 +43,7 @@ struct EditMemoModel: EditMemoModelInput {
             var updatedIsFavorite = storedMemo.isFavorite
             try realm.write {
                 updatedIsFavorite = !storedMemo.isFavorite
-
-                if updatedIsFavorite {
-                    let favoriteDisplayOrder = MemoOrderingHelper.nextFavoriteDisplayOrder(in: realm)
-                    storedMemo.isFavorite = true
-                    storedMemo.favoriteDisplayOrder = favoriteDisplayOrder
-                } else {
-                    storedMemo.isFavorite = false
-                    storedMemo.favoriteDisplayOrder = 0
-                    MemoOrderingHelper.normalizeFavoriteDisplayOrder(in: realm)
-                }
+                updateFavoriteStatus(for: storedMemo, isFavorite: updatedIsFavorite, in: realm)
             }
 
             return updatedIsFavorite
@@ -62,6 +53,18 @@ struct EditMemoModel: EditMemoModelInput {
         } catch let error as NSError {
             print(error.localizedDescription)
             throw StorageError.write("Not enough disk space for editing")
+        }
+    }
+
+    private func updateFavoriteStatus(for memo: Memo, isFavorite: Bool, in realm: Realm) {
+        if isFavorite {
+            let favoriteDisplayOrder = MemoOrderingHelper.nextFavoriteDisplayOrder(in: realm)
+            memo.isFavorite = true
+            memo.favoriteDisplayOrder = favoriteDisplayOrder
+        } else {
+            memo.isFavorite = false
+            memo.favoriteDisplayOrder = 0
+            MemoOrderingHelper.normalizeFavoriteDisplayOrder(in: realm)
         }
     }
 }

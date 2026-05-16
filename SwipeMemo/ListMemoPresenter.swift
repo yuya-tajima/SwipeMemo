@@ -27,16 +27,47 @@ protocol ListMemoPresenterOutput: AnyObject {
 
 final class ListMemoPresenter: ListMemoPresenterInput {
 
-    private enum MemoSection {
-        case favorite
-        case regular
+    private struct MemoSection {
+        enum Kind: Equatable {
+            case favorite
+            case regular
+        }
+
+        let kind: Kind
+        var memos: [Memo]
+
+        var isFavorite: Bool {
+            switch kind {
+            case .favorite:
+                return true
+            case .regular:
+                return false
+            }
+        }
+
+        var title: String? {
+            switch kind {
+            case .favorite:
+                return NSLocalizedString("memo_list_favorites_section_title", comment: "")
+            case .regular:
+                return NSLocalizedString("memo_list_regular_section_title", comment: "")
+            }
+        }
+
+        var moveFailureDescription: String {
+            switch kind {
+            case .favorite:
+                return "favorite memo"
+            case .regular:
+                return "regular memo"
+            }
+        }
     }
-    
+
     private weak var view: ListMemoPresenterOutput!
     private var model: ListMemoModelInput
     
-    private var favoriteMemos: [Memo] = []
-    private var regularMemos: [Memo] = []
+    private var sections: [MemoSection] = []
     
     var numberOfSections: Int {
         return sections.count
@@ -47,61 +78,50 @@ final class ListMemoPresenter: ListMemoPresenterInput {
         self.model = model
     }
 
-    private var sections: [MemoSection] {
+    private static func makeSections(from memos: [Memo]) -> [MemoSection] {
+        let favoriteMemos = memos.filter { $0.isFavorite }
+        let regularMemos = memos.filter { !$0.isFavorite }
         var sections: [MemoSection] = []
         if !favoriteMemos.isEmpty {
-            sections.append(.favorite)
+            sections.append(MemoSection(kind: .favorite, memos: favoriteMemos))
         }
         if !regularMemos.isEmpty {
-            sections.append(.regular)
+            sections.append(MemoSection(kind: .regular, memos: regularMemos))
         }
         return sections
     }
     
     func numberOfMemos(in section: Int) -> Int {
-        switch memoSection(at: section) {
-        case .favorite:
-            return favoriteMemos.count
-        case .regular:
-            return regularMemos.count
-        }
+        return memoSection(at: section).memos.count
     }
 
     func memo(at indexPath: IndexPath) -> Memo {
-        switch memoSection(at: indexPath.section) {
-        case .favorite:
-            return favoriteMemos[indexPath.row]
-        case .regular:
-            return regularMemos[indexPath.row]
-        }
+        return memoSection(at: indexPath.section).memos[indexPath.row]
     }
 
     func titleForSection(_ section: Int) -> String? {
-        switch memoSection(at: section) {
-        case .favorite:
-            return NSLocalizedString("memo_list_favorites_section_title", comment: "")
-        case .regular:
-            guard !favoriteMemos.isEmpty else {
-                return nil
-            }
-            return NSLocalizedString("memo_list_regular_section_title", comment: "")
+        let memoSection = memoSection(at: section)
+        if memoSection.kind == .regular && !hasFavoriteSection {
+            return nil
         }
+        return memoSection.title
     }
     
     private func fetchMemo() {
         do {
             let memos = try self.model.fetchAll()
-            favoriteMemos = memos.filter { $0.isFavorite }
-            regularMemos = memos.filter { !$0.isFavorite }
+            sections = Self.makeSections(from: memos)
         } catch {
-            favoriteMemos = []
-            regularMemos = []
+            sections = []
             handleError(error)
         }
     }
 
+    private var hasFavoriteSection: Bool {
+        return sections.contains { $0.kind == .favorite }
+    }
+
     private func memoSection(at section: Int) -> MemoSection {
-        let sections = self.sections
         guard sections.indices.contains(section) else {
             fatalError("Invalid memo section: \(section), count \(sections.count).")
         }
@@ -156,31 +176,18 @@ final class ListMemoPresenter: ListMemoPresenterInput {
             return false
         }
 
-        let movedAreaMemos: [Memo]
-        let isFavoriteMove: Bool
-        switch memoSection(at: sourceIndexPath.section) {
-        case .favorite:
-            guard favoriteMemos.indices.contains(sourceIndexPath.row),
-                  favoriteMemos.indices.contains(destinationIndexPath.row) else {
-                fatalError("Invalid favorite memo move: source \(sourceIndexPath.row), destination \(destinationIndexPath.row), count \(favoriteMemos.count).")
-            }
-            let movedMemo = favoriteMemos.remove(at: sourceIndexPath.row)
-            favoriteMemos.insert(movedMemo, at: destinationIndexPath.row)
-            movedAreaMemos = favoriteMemos
-            isFavoriteMove = true
-        case .regular:
-            guard regularMemos.indices.contains(sourceIndexPath.row),
-                  regularMemos.indices.contains(destinationIndexPath.row) else {
-                fatalError("Invalid regular memo move: source \(sourceIndexPath.row), destination \(destinationIndexPath.row), count \(regularMemos.count).")
-            }
-            let movedMemo = regularMemos.remove(at: sourceIndexPath.row)
-            regularMemos.insert(movedMemo, at: destinationIndexPath.row)
-            movedAreaMemos = regularMemos
-            isFavoriteMove = false
+        let movedSection = memoSection(at: sourceIndexPath.section)
+        guard movedSection.memos.indices.contains(sourceIndexPath.row),
+              movedSection.memos.indices.contains(destinationIndexPath.row) else {
+            fatalError("Invalid \(movedSection.moveFailureDescription) move: source \(sourceIndexPath.row), destination \(destinationIndexPath.row), count \(movedSection.memos.count).")
         }
 
+        let movedMemo = sections[sourceIndexPath.section].memos.remove(at: sourceIndexPath.row)
+        sections[sourceIndexPath.section].memos.insert(movedMemo, at: destinationIndexPath.row)
+        let movedAreaMemos = sections[sourceIndexPath.section].memos
+
         do {
-            try model.updateDisplayOrder(memos: movedAreaMemos, isFavorite: isFavoriteMove)
+            try model.updateDisplayOrder(memos: movedAreaMemos, isFavorite: movedSection.isFavorite)
             fetchMemo()
             return true
         } catch {
