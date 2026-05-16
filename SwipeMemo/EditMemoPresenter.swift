@@ -5,20 +5,25 @@
 //  Created by 優也田島 on 2022/07/10.
 //
 
+import RealmSwift
+
 protocol EditMemoPresenterInput {
     func shouldChangeTextIn (totalWordCount words: Int) -> Bool
     func viewWillDisappear(text: String)
     func dismiss()
-    func memo() -> Memo
+    func dismissAfter()
+    func initialText() -> String
 }
 
 struct EditDataSender {
-    var prevScene: EditMemoDismissActionProtocol!
-    var memo: Memo!
+    let prevScene: EditMemoDismissActionProtocol
+    let memoID: ObjectId
+    let initialText: String
     
-    init(prevScene: EditMemoDismissActionProtocol, memo: Memo) {
+    init(prevScene: EditMemoDismissActionProtocol, memoID: ObjectId, initialText: String) {
         self.prevScene = prevScene
-        self.memo = memo
+        self.memoID = memoID
+        self.initialText = initialText
     }
 }
 
@@ -52,8 +57,8 @@ struct EditMemoPresenter: EditMemoPresenterInput {
         sender.prevScene.viewDidAppear()
     }
     
-    func memo() -> Memo {
-        return sender.memo
+    func initialText() -> String {
+        return sender.initialText
     }
     
     func shouldChangeTextIn (totalWordCount words: Int) -> Bool {
@@ -67,7 +72,7 @@ struct EditMemoPresenter: EditMemoPresenterInput {
         }
 
         do {
-            try self.model.save(memo: sender.memo, text: normalizedText)
+            try self.model.save(memoID: sender.memoID, text: normalizedText)
         } catch StorageError.write(let message) {
             MemoError.pushErrorMessage(message: message)
         } catch {

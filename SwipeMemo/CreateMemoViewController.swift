@@ -39,7 +39,7 @@ class CreateMemoViewController: UIViewController {
     private func setup() {
         
         self.navigationController?.setNavigationBarHidden(true, animated: false)
-        
+
         textField.font = UIFont.systemFont(ofSize: 20)
         textField.textContainerInset = UIEdgeInsets(top: 20, left: 10, bottom: 20, right: 10)
         textField.autocorrectionType = .no

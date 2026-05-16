@@ -14,4 +14,6 @@ class Memo: Object {
     @Persisted var text = ""
     
     @Persisted var date = Date()
+
+    @Persisted var displayOrder = 0
 }

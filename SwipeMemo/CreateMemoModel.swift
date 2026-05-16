@@ -18,9 +18,19 @@ struct CreateMemoModel: CreateMemoModelInput {
             let realm = try Realm()
 
             try realm.write {
+                let existingMemos = Array(realm.objects(Memo.self).sorted(by: [
+                    SortDescriptor(keyPath: "displayOrder", ascending: true),
+                    SortDescriptor(keyPath: "date", ascending: false)
+                ]))
+
+                for (index, memo) in existingMemos.enumerated() {
+                    memo.displayOrder = index + 1
+                }
+
                 let memo = Memo()
                 memo.text = text
                 memo.date = Date()
+                memo.displayOrder = 0
                 realm.add(memo, update: .modified)
             }
             

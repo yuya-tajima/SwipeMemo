@@ -12,12 +12,12 @@ protocol ListMemoPresenterInput {
     func didSwipeLeft()
     var numberOfMemos: Int { get }
     func memo(forRow row:Int) -> Memo
+    func moveMemo(from sourceRow: Int, to destinationRow: Int) -> Bool
     func viewWillAppear()
     func pullDown()
 }
 
 protocol ListMemoPresenterOutput: AnyObject {
-    func deleteMemo(indexPath:IndexPath)
     func reloadMemo()
     func transitionToCreate()
     func transitionToSettings()
@@ -46,9 +46,18 @@ final class ListMemoPresenter: ListMemoPresenterInput {
     private func fetchMemo() {
         do {
             try memos = self.model.fetchAll()
-        } catch StorageError.write(let message) {
-            MemoError.pushErrorMessage(message: message)
         } catch {
+            memos = []
+            handleError(error)
+        }
+    }
+
+    private func handleError(_ error: Error) {
+        switch error {
+        case StorageError.write(let message),
+             StorageError.read(let message):
+            MemoError.pushErrorMessage(message: message)
+        default:
             fatalError("Unexpected error: \(error).")
         }
     }
@@ -67,11 +76,36 @@ final class ListMemoPresenter: ListMemoPresenterInput {
         do {
             try self.model.delete(memo: memo)
             fetchMemo()
-            self.view.deleteMemo(indexPath: at)
-        } catch StorageError.write(let message) {
-            MemoError.pushErrorMessage(message: message)
+            view.reloadMemo()
         } catch {
-            fatalError("Unexpected error: \(error).")
+            handleError(error)
+            fetchMemo()
+            view.reloadMemo()
+        }
+    }
+
+    func moveMemo(from sourceRow: Int, to destinationRow: Int) -> Bool {
+        guard sourceRow != destinationRow else {
+            return true
+        }
+
+        guard memos.indices.contains(sourceRow),
+              memos.indices.contains(destinationRow) else {
+            fatalError("Invalid memo move: source \(sourceRow), destination \(destinationRow), count \(memos.count).")
+        }
+
+        let movedMemo = memos.remove(at: sourceRow)
+        memos.insert(movedMemo, at: destinationRow)
+
+        do {
+            try model.updateDisplayOrder(memos: memos)
+            fetchMemo()
+            return true
+        } catch {
+            handleError(error)
+            fetchMemo()
+            view.reloadMemo()
+            return false
         }
     }
 

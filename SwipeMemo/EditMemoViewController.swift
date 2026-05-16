@@ -11,20 +11,19 @@ class EditMemoViewController: UIViewController {
     
     @IBOutlet weak var textField: UITextView!
     
-    private var presenter: EditMemoPresenter!
+    private var presenter: EditMemoPresenterInput!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
     }
     
-    func inject(presenter: EditMemoPresenter) {
+    func inject(presenter: EditMemoPresenterInput) {
         self.presenter = presenter
     }
     
     private func setup () {
-        let memo = self.presenter.memo()
-        textField.text = memo.text
+        textField.text = presenter.initialText()
         textField.font = UIFont.systemFont(ofSize: 20)
         textField.textContainerInset = UIEdgeInsets(top: 20, left: 10, bottom: 20, right: 10)
         textField.autocorrectionType = .no
@@ -40,7 +39,7 @@ class EditMemoViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         if let text = self.textField.text, !text.isEmpty {
-            self.presenter.viewWillDisappear(text: text)
+            presenter.viewWillDisappear(text: text)
         }
         super.viewWillDisappear(true)
     }

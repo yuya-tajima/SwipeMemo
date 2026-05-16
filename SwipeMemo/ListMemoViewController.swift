@@ -24,7 +24,13 @@ class ListMemoViewController: UIViewController {
         setup()
     }
 
-    private func setup () {
+    private func setup() {
+        setupCreateMemoViewController()
+        setupTableView()
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+
+    private func setupCreateMemoViewController() {
         firstViewController = storyboard?.instantiateViewController(withIdentifier: "FirstInput") as? CreateMemoViewController
         let model = CreateMemoModel()
         let helper = InputMemoHelper()
@@ -35,7 +41,9 @@ class ListMemoViewController: UIViewController {
                 helper: helper
             )
         )
-        
+    }
+
+    private func setupTableView() {
         let refreshControl = UIRefreshControl()
         refreshControl.tintColor = .clear
         refreshControl.addTarget(self, action: #selector(createMemo(_:)), for: .valueChanged)
@@ -51,8 +59,9 @@ class ListMemoViewController: UIViewController {
         )
         rightSwipe.direction = .right
         tableView.addGestureRecognizer(rightSwipe)
-        
-        self.navigationController?.setNavigationBarHidden(true, animated: false)
+        tableView.dragDelegate = self
+        tableView.dropDelegate = self
+        tableView.dragInteractionEnabled = true
     }
     
     @objc func didSwipe(_ sender: UISwipeGestureRecognizer) {
@@ -115,7 +124,8 @@ class ListMemoViewController: UIViewController {
 
             let sender = EditDataSender(
                 prevScene: self,
-                memo: memo
+                memoID: memo.id,
+                initialText: memo.text
             )
             editViewController.inject(
                 presenter: EditMemoPresenter(
@@ -169,6 +179,67 @@ extension ListMemoViewController: UITableViewDataSource {
         cell.textLabel?.lineBreakMode = .byTruncatingTail
         return cell
     }
+
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        _ = presenter.moveMemo(from: sourceIndexPath.row, to: destinationIndexPath.row)
+    }
+}
+
+extension ListMemoViewController: UITableViewDragDelegate {
+
+    func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        let memo = presenter.memo(forRow: indexPath.row)
+        let itemProvider = NSItemProvider(object: memo.text as NSString)
+        let dragItem = UIDragItem(itemProvider: itemProvider)
+        dragItem.localObject = memo.id.stringValue
+        return [dragItem]
+    }
+}
+
+extension ListMemoViewController: UITableViewDropDelegate {
+
+    func tableView(_ tableView: UITableView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UITableViewDropProposal {
+        guard session.localDragSession != nil else {
+            return UITableViewDropProposal(operation: .cancel)
+        }
+
+        return UITableViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
+    }
+
+    func tableView(_ tableView: UITableView, performDropWith coordinator: UITableViewDropCoordinator) {
+        guard coordinator.proposal.operation == .move,
+              let item = coordinator.items.first,
+              let sourceIndexPath = item.sourceIndexPath else {
+            return
+        }
+
+        let rowCount = presenter.numberOfMemos
+        guard rowCount > 0 else {
+            return
+        }
+
+        let proposedRow = coordinator.destinationIndexPath?.row ?? rowCount - 1
+        let destinationRow = min(max(proposedRow, 0), rowCount - 1)
+        let destinationIndexPath = IndexPath(row: destinationRow, section: sourceIndexPath.section)
+
+        guard sourceIndexPath != destinationIndexPath else {
+            coordinator.drop(item.dragItem, toRowAt: destinationIndexPath)
+            return
+        }
+
+        guard presenter.moveMemo(from: sourceIndexPath.row, to: destinationRow) else {
+            return
+        }
+
+        tableView.performBatchUpdates({
+            tableView.moveRow(at: sourceIndexPath, to: destinationIndexPath)
+        }, completion: nil)
+        coordinator.drop(item.dragItem, toRowAt: destinationIndexPath)
+    }
 }
 
 extension ListMemoViewController: ListMemoPresenterOutput {
@@ -177,10 +248,6 @@ extension ListMemoViewController: ListMemoPresenterOutput {
         tableView.reloadData()
     }
     
-    func deleteMemo(indexPath: IndexPath) {
-        tableView.deleteRows(at: [indexPath], with: .fade)
-    }
-
     func transitionToCreate() {
         let transition:CATransition = CATransition()
         transition.duration = 0.1
