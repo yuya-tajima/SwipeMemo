@@ -42,6 +42,12 @@ class CreateMemoViewController: UIViewController {
         
         textField.font = UIFont.systemFont(ofSize: 20)
         textField.textContainerInset = UIEdgeInsets(top: 20, left: 10, bottom: 20, right: 10)
+        textField.autocorrectionType = .no
+        textField.spellCheckingType = .no
+        textField.autocapitalizationType = .none
+        textField.smartQuotesType = .no
+        textField.smartDashesType = .no
+        textField.smartInsertDeleteType = .no
         textField.delegate = self
 
         let leftSwipe = UISwipeGestureRecognizer(
