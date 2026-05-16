@@ -33,8 +33,17 @@ class EditMemoViewController: UIViewController {
         textField.smartDashesType = .no
         textField.smartInsertDeleteType = .no
         textField.delegate = self
+        setupKeyboardToolbar()
         
         presentationController?.delegate = self
+    }
+
+    private func setupKeyboardToolbar() {
+        textField.inputAccessoryView = KeyboardDoneToolbar(target: self, action: #selector(dismissKeyboard))
+    }
+
+    @objc private func dismissKeyboard() {
+        textField.resignFirstResponder()
     }
     
     override func viewWillDisappear(_ animated: Bool) {

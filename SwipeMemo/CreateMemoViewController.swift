@@ -49,6 +49,7 @@ class CreateMemoViewController: UIViewController {
         textField.smartDashesType = .no
         textField.smartInsertDeleteType = .no
         textField.delegate = self
+        setupKeyboardToolbar()
 
         let leftSwipe = UISwipeGestureRecognizer(
             target: self,
@@ -92,6 +93,14 @@ class CreateMemoViewController: UIViewController {
                 helper: helper
             )
         )
+    }
+
+    private func setupKeyboardToolbar() {
+        textField.inputAccessoryView = KeyboardDoneToolbar(target: self, action: #selector(dismissKeyboard))
+    }
+
+    @objc private func dismissKeyboard() {
+        textField.resignFirstResponder()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
