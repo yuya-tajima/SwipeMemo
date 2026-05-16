@@ -1,2 +1,5 @@
 Pods/*
 *.xcworkspace
+.DS_Store
+xcuserdata/
+*.xcuserstate
