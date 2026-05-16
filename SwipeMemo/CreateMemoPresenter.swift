@@ -34,8 +34,13 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
     }
     
     func viewWillDisappear(text: String) {
+        let normalizedText = self.helper.normalizedTextForSaving(text)
+        guard !normalizedText.isEmpty else {
+            return
+        }
+
         do {
-            try self.model.save(text: text)
+            try self.model.save(text: normalizedText)
         } catch StorageError.write(let message) {
             MemoError.pushErrorMessage(message: message)
         } catch {

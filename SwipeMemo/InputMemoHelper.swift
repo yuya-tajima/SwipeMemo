@@ -7,6 +7,7 @@
 
 protocol InputMemoConstraintsProtocol {
     func isNumberOfCharsCorrent(totalWordCount: Int) -> Bool
+    func normalizedTextForSaving(_ text: String) -> String
 }
 
 struct InputMemoHelper: InputMemoConstraintsProtocol {
@@ -15,5 +16,16 @@ struct InputMemoHelper: InputMemoConstraintsProtocol {
     
     func isNumberOfCharsCorrent(totalWordCount: Int) -> Bool {
         return totalWordCount <= maxCharactersNumber
+    }
+
+    func normalizedTextForSaving(_ text: String) -> String {
+        var lines = text.components(separatedBy: .newlines)
+
+        while let lastLine = lines.last,
+              lastLine.trimmingCharacters(in: .whitespaces).isEmpty {
+            lines.removeLast()
+        }
+
+        return lines.joined(separator: "\n")
     }
 }

@@ -61,8 +61,13 @@ struct EditMemoPresenter: EditMemoPresenterInput {
     }
     
     func viewWillDisappear(text: String) {
+        let normalizedText = self.helper.normalizedTextForSaving(text)
+        guard !normalizedText.isEmpty else {
+            return
+        }
+
         do {
-            try self.model.save(memo: sender.memo, text: text)
+            try self.model.save(memo: sender.memo, text: normalizedText)
         } catch StorageError.write(let message) {
             MemoError.pushErrorMessage(message: message)
         } catch {
