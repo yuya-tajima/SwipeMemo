@@ -6,7 +6,7 @@
 //
 
 protocol EditMemoPresenterInput {
-    func shouldChangeTextIn (totalWordCount words: Int, totalLineCount lines: Int) -> Bool
+    func shouldChangeTextIn (totalWordCount words: Int) -> Bool
     func viewWillDisappear(text: String)
     func dismiss()
     func memo() -> Memo
@@ -56,8 +56,8 @@ struct EditMemoPresenter: EditMemoPresenterInput {
         return sender.memo
     }
     
-    func shouldChangeTextIn (totalWordCount words: Int, totalLineCount lines: Int) -> Bool {
-        return self.helper.isNumberOfCharsCorrent(totalWordCount: words, totalLineCount: lines)
+    func shouldChangeTextIn (totalWordCount words: Int) -> Bool {
+        return self.helper.isNumberOfCharsCorrent(totalWordCount: words)
     }
     
     func viewWillDisappear(text: String) {

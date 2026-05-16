@@ -110,12 +110,14 @@ class CreateMemoViewController: UIViewController {
 
 extension CreateMemoViewController: UITextViewDelegate {
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        let totalWordCount    = textView.text.count + (text.count - range.length)
-        let currentLineCount  = textView.text.components(separatedBy: .newlines).count
-        let newLineCount      = text.components(separatedBy: .newlines).count - 1
-        let totalLineCount    = currentLineCount + newLineCount
+        guard let currentText = textView.text,
+              let textRange = Range(range, in: currentText)
+        else {
+            return false
+        }
         
-        return self.presenter.shouldChangeTextIn(totalWordCount: totalWordCount, totalLineCount: totalLineCount)
+        let updatedText = currentText.replacingCharacters(in: textRange, with: text)
+        return self.presenter.shouldChangeTextIn(totalWordCount: updatedText.count)
     }
 }
 

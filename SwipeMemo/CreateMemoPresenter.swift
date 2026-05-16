@@ -8,7 +8,7 @@
 protocol CreateMemoPresenterInput {
     func didLeftSwipe(storyboardID: String)
     func didDownSwipe()
-    func shouldChangeTextIn (totalWordCount words: Int, totalLineCount lines: Int) -> Bool
+    func shouldChangeTextIn (totalWordCount words: Int) -> Bool
     func viewWillDisappear(text: String)
 }
 
@@ -29,8 +29,8 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
         self.helper = helper
     }
     
-    func shouldChangeTextIn (totalWordCount words: Int, totalLineCount lines: Int) -> Bool {
-        return self.helper.isNumberOfCharsCorrent(totalWordCount: words, totalLineCount: lines)
+    func shouldChangeTextIn (totalWordCount words: Int) -> Bool {
+        return self.helper.isNumberOfCharsCorrent(totalWordCount: words)
     }
     
     func viewWillDisappear(text: String) {

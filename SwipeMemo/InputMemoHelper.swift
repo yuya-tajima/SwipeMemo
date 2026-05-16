@@ -6,15 +6,14 @@
 //
 
 protocol InputMemoConstraintsProtocol {
-    func isNumberOfCharsCorrent(totalWordCount: Int, totalLineCount: Int) -> Bool
+    func isNumberOfCharsCorrent(totalWordCount: Int) -> Bool
 }
 
 struct InputMemoHelper: InputMemoConstraintsProtocol {
     
-    let maxWordsNumber = 150
-    let maxLinesNumber = 10
+    let maxCharactersNumber = 1000
     
-    func isNumberOfCharsCorrent(totalWordCount: Int, totalLineCount: Int) -> Bool {
-        return (totalWordCount <= maxWordsNumber) && (totalLineCount <= maxLinesNumber)
+    func isNumberOfCharsCorrent(totalWordCount: Int) -> Bool {
+        return totalWordCount <= maxCharactersNumber
     }
 }

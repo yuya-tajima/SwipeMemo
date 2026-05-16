@@ -165,7 +165,8 @@ extension ListMemoViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let memo = presenter.memo(forRow: indexPath.row)
         cell.textLabel?.text = memo.text
-        cell.textLabel?.numberOfLines = 0
+        cell.textLabel?.numberOfLines = 15
+        cell.textLabel?.lineBreakMode = .byTruncatingTail
         return cell
     }
 }
