@@ -16,9 +16,8 @@ class SettingsViewController: UIViewController {
     }
     
     private func setup() {
-        
-        versionLabel.text = "1.0"
-        
+        versionLabel.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+
         let downSwipe = UISwipeGestureRecognizer(
             target: self,
             action: #selector(self.didSwipe(_:))
