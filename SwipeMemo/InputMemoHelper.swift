@@ -12,7 +12,7 @@ protocol InputMemoConstraintsProtocol {
 
 struct InputMemoHelper: InputMemoConstraintsProtocol {
     
-    let maxCharactersNumber = 1000
+    let maxCharactersNumber = 10_000
     
     func isNumberOfCharsCorrent(totalWordCount: Int) -> Bool {
         return totalWordCount <= maxCharactersNumber

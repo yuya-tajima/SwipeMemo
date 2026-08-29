@@ -17,6 +17,10 @@ class CreateMemoViewController: UIViewController {
     
     private var presenter: CreateMemoPresenterInput!
     private let favoriteToolbar = MemoFavoriteToolbar()
+    private lazy var keyboardDoneToolbar = KeyboardDoneToolbar(
+        target: self,
+        action: #selector(dismissKeyboard)
+    )
     private var didEnterBackgroundObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
@@ -100,11 +104,17 @@ class CreateMemoViewController: UIViewController {
     }
 
     private func setupFavoriteToolbar() {
-        favoriteToolbar.install(in: view, above: textField, delegate: self, isFavorite: presenter.initialIsFavorite())
+        favoriteToolbar.install(
+            in: view,
+            overlaying: textField,
+            above: keyboardDoneToolbar,
+            delegate: self,
+            isFavorite: presenter.initialIsFavorite()
+        )
     }
 
     private func setupKeyboardToolbar() {
-        textField.inputAccessoryView = KeyboardDoneToolbar(target: self, action: #selector(dismissKeyboard))
+        keyboardDoneToolbar.install(in: view)
     }
 
     @objc private func dismissKeyboard() {

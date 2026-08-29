@@ -15,8 +15,10 @@ final class MemoFavoriteToolbar: UIToolbar {
 
     private var favoriteButton: UIBarButtonItem!
     private enum Layout {
-        static let height: CGFloat = 44
-        static let bottomSpacing: CGFloat = 16
+        static let size: CGFloat = 44
+        static let verticalSpacing: CGFloat = 8
+        static let contentBottomInset: CGFloat = 44
+        static let indicatorBottomInset: CGFloat = 108
     }
 
     override init(frame: CGRect) {
@@ -29,19 +31,26 @@ final class MemoFavoriteToolbar: UIToolbar {
         setup()
     }
 
-    func install(in containerView: UIView, above contentView: UIView, delegate: MemoFavoriteToolbarDelegate, isFavorite: Bool) {
+    func install(
+        in containerView: UIView,
+        overlaying contentView: UIView,
+        above doneToolbar: UIView,
+        delegate: MemoFavoriteToolbarDelegate,
+        isFavorite: Bool
+    ) {
         favoriteDelegate = delegate
         translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(self)
         Self.deactivateBottomConstraints(in: containerView, for: contentView)
 
         NSLayoutConstraint.activate([
-            leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            bottomAnchor.constraint(equalTo: containerView.safeAreaLayoutGuide.bottomAnchor, constant: -Layout.bottomSpacing),
-            heightAnchor.constraint(equalToConstant: Layout.height),
-            contentView.bottomAnchor.constraint(equalTo: topAnchor)
+            trailingAnchor.constraint(equalTo: doneToolbar.trailingAnchor),
+            bottomAnchor.constraint(equalTo: doneToolbar.topAnchor, constant: -Layout.verticalSpacing),
+            widthAnchor.constraint(equalToConstant: Layout.size),
+            heightAnchor.constraint(equalToConstant: Layout.size),
+            contentView.bottomAnchor.constraint(equalTo: containerView.keyboardLayoutGuide.topAnchor)
         ])
+        Self.addOverlayInsets(to: contentView)
         update(isFavorite: isFavorite)
     }
 
@@ -59,7 +68,21 @@ final class MemoFavoriteToolbar: UIToolbar {
         favoriteButton.tintColor = .systemYellow
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         items = [flexibleSpace, favoriteButton]
+        clipsToBounds = true
+        layer.cornerRadius = Layout.size / 2
         update(isFavorite: false)
+    }
+
+    private static func addOverlayInsets(to contentView: UIView) {
+        guard let scrollView = contentView as? UIScrollView else {
+            return
+        }
+
+        scrollView.contentInset.bottom = max(scrollView.contentInset.bottom, Layout.contentBottomInset)
+        scrollView.verticalScrollIndicatorInsets.bottom = max(
+            scrollView.verticalScrollIndicatorInsets.bottom,
+            Layout.indicatorBottomInset
+        )
     }
 
     private static func deactivateBottomConstraints(in containerView: UIView, for contentView: UIView) {
