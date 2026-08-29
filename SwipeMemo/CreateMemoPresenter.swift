@@ -5,11 +5,13 @@
 //  Created by 優也田島 on 2022/07/10.
 //
 
+import RealmSwift
+
 protocol CreateMemoPresenterInput {
     func didLeftSwipe(storyboardID: String)
     func didDownSwipe()
     func shouldChangeTextIn (totalWordCount words: Int) -> Bool
-    func viewWillDisappear(text: String)
+    mutating func save(text: String)
     func initialIsFavorite() -> Bool
     mutating func didTapFavoriteButton()
 }
@@ -26,11 +28,15 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
     private var model: CreateMemoModelInput
     private var helper: InputMemoConstraintsProtocol
     private var isFavorite = false
+    private let memoID: ObjectId
+    private var lastSavedText: String?
+    private var lastSavedIsFavorite: Bool?
     
     init(view: CreateMemoPresenterOutput, model: CreateMemoModelInput, helper: InputMemoConstraintsProtocol) {
         self.view  = view
         self.model = model
         self.helper = helper
+        self.memoID = ObjectId.generate()
     }
     
     func shouldChangeTextIn (totalWordCount words: Int) -> Bool {
@@ -46,14 +52,20 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
         view.updateFavoriteButton(isFavorite: isFavorite)
     }
     
-    func viewWillDisappear(text: String) {
+    mutating func save(text: String) {
         let normalizedText = self.helper.normalizedTextForSaving(text)
         guard !normalizedText.isEmpty else {
             return
         }
 
+        guard normalizedText != lastSavedText || isFavorite != lastSavedIsFavorite else {
+            return
+        }
+
         do {
-            try self.model.save(text: normalizedText, isFavorite: isFavorite)
+            try self.model.save(memoID: memoID, text: normalizedText, isFavorite: isFavorite)
+            lastSavedText = normalizedText
+            lastSavedIsFavorite = isFavorite
         } catch StorageError.write(let message) {
             MemoError.pushErrorMessage(message: message)
         } catch {

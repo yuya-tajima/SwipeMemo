@@ -17,6 +17,7 @@ class CreateMemoViewController: UIViewController {
     
     private var presenter: CreateMemoPresenterInput!
     private let favoriteToolbar = MemoFavoriteToolbar()
+    private var didEnterBackgroundObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +30,7 @@ class CreateMemoViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
+        startObservingDidEnterBackground()
         if MemoError.exists() {
             let dialog = UIAlertController(title: "Error", message: MemoError.popErrorMessage(), preferredStyle: .alert)
             dialog.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
@@ -108,12 +110,46 @@ class CreateMemoViewController: UIViewController {
     @objc private func dismissKeyboard() {
         textField.resignFirstResponder()
     }
+
+    private func startObservingDidEnterBackground() {
+        guard didEnterBackgroundObserver == nil else {
+            return
+        }
+
+        didEnterBackgroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.saveMemoIfNeeded()
+        }
+    }
+
+    private func stopObservingDidEnterBackground() {
+        guard let observer = didEnterBackgroundObserver else {
+            return
+        }
+
+        NotificationCenter.default.removeObserver(observer)
+        didEnterBackgroundObserver = nil
+    }
+
+    private func saveMemoIfNeeded() {
+        guard let text = textField.text else {
+            return
+        }
+
+        presenter.save(text: text)
+    }
     
     override func viewWillDisappear(_ animated: Bool) {
-        if let text = self.textField.text, !text.isEmpty {
-            self.presenter.viewWillDisappear(text: text)
-        }
-        super.viewWillDisappear(true)
+        saveMemoIfNeeded()
+        stopObservingDidEnterBackground()
+        super.viewWillDisappear(animated)
+    }
+
+    deinit {
+        stopObservingDidEnterBackground()
     }
     
     @objc func didSwipe(_ sender: UISwipeGestureRecognizer) {
