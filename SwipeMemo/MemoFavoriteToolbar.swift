@@ -17,7 +17,7 @@ final class MemoFavoriteToolbar: UIToolbar {
     private enum Layout {
         static let size: CGFloat = 44
         static let verticalSpacing: CGFloat = 8
-        static let contentBottomInset: CGFloat = 44
+        static let contentBottomInset: CGFloat = 108
         static let indicatorBottomInset: CGFloat = 108
     }
 
@@ -61,6 +61,19 @@ final class MemoFavoriteToolbar: UIToolbar {
             isFavorite ? "favorite_button_remove_accessibility_label" : "favorite_button_add_accessibility_label",
             comment: ""
         )
+    }
+
+    func scrollSelectionAboveControls(in textView: UITextView) {
+        guard textView.isFirstResponder,
+              let selectedTextRange = textView.selectedTextRange,
+              selectedTextRange.isEmpty
+        else {
+            return
+        }
+
+        var protectedCaretRect = textView.caretRect(for: selectedTextRange.end)
+        protectedCaretRect.size.height += Layout.contentBottomInset
+        textView.scrollRectToVisible(protectedCaretRect, animated: false)
     }
 
     private func setup() {

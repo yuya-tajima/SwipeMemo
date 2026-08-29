@@ -71,6 +71,10 @@ class EditMemoViewController: UIViewController {
 }
 
 extension EditMemoViewController: UITextViewDelegate {
+    func textViewDidChangeSelection(_ textView: UITextView) {
+        favoriteToolbar.scrollSelectionAboveControls(in: textView)
+    }
+
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         guard let currentText = textView.text,
               let textRange = Range(range, in: currentText)

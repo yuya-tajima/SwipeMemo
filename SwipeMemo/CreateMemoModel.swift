@@ -9,6 +9,7 @@ import RealmSwift
 
 protocol CreateMemoModelInput {
     func save(memoID: ObjectId, text: String, isFavorite: Bool) throws -> Void
+    func delete(memoID: ObjectId) throws -> Void
 }
 
 struct CreateMemoModel: CreateMemoModelInput {
@@ -38,6 +39,25 @@ struct CreateMemoModel: CreateMemoModelInput {
         } catch let error as NSError {
             print(error.localizedDescription)
             throw StorageError.write("Not enough disk space for creating")
+        }
+    }
+
+    func delete(memoID: ObjectId) throws -> Void {
+        do {
+            let realm = try Realm()
+            guard let storedMemo = realm.object(ofType: Memo.self, forPrimaryKey: memoID) else {
+                return
+            }
+
+            try realm.write {
+                realm.delete(storedMemo)
+                MemoOrderingHelper.normalizeDisplayOrder(in: realm)
+                MemoOrderingHelper.normalizeFavoriteDisplayOrder(in: realm)
+            }
+
+        } catch let error as NSError {
+            print(error.localizedDescription)
+            throw StorageError.write("The memo could not be deleted")
         }
     }
 

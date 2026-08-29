@@ -54,7 +54,9 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
     
     mutating func save(text: String) {
         let normalizedText = self.helper.normalizedTextForSaving(text)
-        guard !normalizedText.isEmpty else {
+
+        if normalizedText.isEmpty {
+            deleteSavedMemoIfNeeded()
             return
         }
 
@@ -66,6 +68,22 @@ struct CreateMemoPresenter: CreateMemoPresenterInput {
             try self.model.save(memoID: memoID, text: normalizedText, isFavorite: isFavorite)
             lastSavedText = normalizedText
             lastSavedIsFavorite = isFavorite
+        } catch StorageError.write(let message) {
+            MemoError.pushErrorMessage(message: message)
+        } catch {
+            fatalError("Unexpected error: \(error).")
+        }
+    }
+
+    private mutating func deleteSavedMemoIfNeeded() {
+        guard lastSavedText != nil else {
+            return
+        }
+
+        do {
+            try model.delete(memoID: memoID)
+            lastSavedText = nil
+            lastSavedIsFavorite = nil
         } catch StorageError.write(let message) {
             MemoError.pushErrorMessage(message: message)
         } catch {
